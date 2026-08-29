@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroEffect();
   initInquiryForm();
   initActiveNavOnScroll();
+  initHistoryShowcase();
 });
 
 /* ============================================================
@@ -92,7 +93,7 @@ function initNavbar() {
    ACTIVE NAV LINK ON SCROLL
    ============================================================ */
 function initActiveNavOnScroll() {
-  const sections = ['home', 'about', 'products', 'why-us', 'factory', 'location', 'contact'];
+  const sections = ['home', 'about', 'history', 'products', 'why-us', 'factory', 'location', 'contact'];
   const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
   const observer = new IntersectionObserver(
@@ -100,9 +101,10 @@ function initActiveNavOnScroll() {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const id = entry.target.id;
+          const targetId = id === 'history' ? 'about' : id;
           navLinks.forEach(link => {
             link.classList.remove('active');
-            if (link.getAttribute('href') === `#${id}`) {
+            if (link.getAttribute('href') === `#${targetId}`) {
               link.classList.add('active');
             }
           });
@@ -479,3 +481,42 @@ function initInquiryForm() {
     stats.forEach(el => observer.observe(el));
   });
 })();
+
+/* ============================================================
+   HISTORY / LEGACY SPLIT-PANE SHOWCASE CONTROLLER
+   ============================================================ */
+function initHistoryShowcase() {
+  const navItems = document.querySelectorAll('.showcase-nav-item');
+  const cards    = document.querySelectorAll('.showcase-card');
+
+  if (!navItems.length || !cards.length) return;
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const targetIndex = parseInt(item.getAttribute('data-index'));
+
+      // Update Nav active status
+      navItems.forEach(nav => {
+        nav.classList.remove('active');
+        nav.setAttribute('aria-selected', 'false');
+      });
+      item.classList.add('active');
+      item.setAttribute('aria-selected', 'true');
+
+      // Update Card active status
+      cards.forEach((card, index) => {
+        if (index === targetIndex) {
+          card.hidden = false;
+          // Delay briefly to allow browser layout calculation before animating
+          setTimeout(() => {
+            card.classList.add('active');
+          }, 30);
+        } else {
+          card.classList.remove('active');
+          card.hidden = true;
+        }
+      });
+    });
+  });
+}
+
