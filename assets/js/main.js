@@ -491,31 +491,48 @@ function initHistoryShowcase() {
 
   if (!navItems.length || !cards.length) return;
 
+  // Scroll spy observer
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const index = entry.target.id.replace('panel-', '');
+        
+        navItems.forEach(nav => {
+          nav.classList.remove('active');
+          nav.setAttribute('aria-selected', 'false');
+        });
+        
+        const activeNav = document.getElementById(`tab-${index}`);
+        if (activeNav) {
+          activeNav.classList.add('active');
+          activeNav.setAttribute('aria-selected', 'true');
+          
+          if (window.innerWidth <= 991) {
+            activeNav.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          }
+        }
+        
+        cards.forEach(card => card.classList.remove('active'));
+        entry.target.classList.add('active');
+      }
+    });
+  }, {
+    rootMargin: '-20% 0px -50% 0px',
+    threshold: 0
+  });
+
+  cards.forEach(card => observer.observe(card));
+
+  // Click to scroll
   navItems.forEach(item => {
     item.addEventListener('click', () => {
-      const targetIndex = parseInt(item.getAttribute('data-index'));
-
-      // Update Nav active status
-      navItems.forEach(nav => {
-        nav.classList.remove('active');
-        nav.setAttribute('aria-selected', 'false');
-      });
-      item.classList.add('active');
-      item.setAttribute('aria-selected', 'true');
-
-      // Update Card active status
-      cards.forEach((card, index) => {
-        if (index === targetIndex) {
-          card.hidden = false;
-          // Delay briefly to allow browser layout calculation before animating
-          setTimeout(() => {
-            card.classList.add('active');
-          }, 30);
-        } else {
-          card.classList.remove('active');
-          card.hidden = true;
-        }
-      });
+      const targetIndex = item.getAttribute('data-index');
+      const targetCard = document.getElementById(`panel-${targetIndex}`);
+      if (targetCard) {
+        const offset = 140; 
+        const top = targetCard.getBoundingClientRect().top + window.scrollY - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
     });
   });
 }
